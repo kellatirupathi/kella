@@ -1,0 +1,135 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    margin: 0;
+}
+
+.container {
+    border-radius: 8px;
+    width: 90%;
+    max-width: 100%;
+    text-align: center;
+    margin-top: 20px;
+}
+
+.flex-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.section {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 58%; /* Ensure the sections have fixed width */
+    min-width: 55%; /* Prevent the sections from getting smaller */
+    box-sizing: border-box;
+}
+
+h2 {
+    margin-bottom: 20px;
+}
+
+.input-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.input-group input[type="file"],
+.input-group input[type="text"] {
+    padding: 10px;
+    flex: 1;
+    margin-right: 10px;
+    box-sizing: border-box;
+}
+
+.input-group button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.input-group button:hover {
+    background-color: #0056b3;
+}
+
+.table-container {
+    max-height: 460px;
+    overflow-y: auto;
+    margin-top: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 400px;
+    table-layout: fixed; /* Ensure table has fixed layout */
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+    word-wrap: break-word; /* Ensure long words wrap */
+}
+
+th {
+    background-color: #f2f2f2;
+}
+
+tbody {
+    font-size: 13px;
+}
+
+table tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+#dataTable1 {
+    width: 40%;
+}
+
+#resultTable1 {
+    width: 38%;
+}
+
+/* Add this CSS class to your styles.css */
+.center-message {
+    text-align: center;
+    font-weight: bold;
+    vertical-align: middle; /* Vertical alignment */
+    height: 200px; /* Ensure sufficient height to center vertically */
+    font-size: 25px;
+}
+
+#resultTable2 {
+    width: 8%;
+    font-size: 8px;
+    text-align: center;
+}
+.large-checkbox {
+    width: 20px;
+    height: 20px;
+    margin-left: 10px;
+}
+#saveButton {
+    width: 60px;
+    height: 40px;
+    background-color: rgb(21, 240, 21);
+    border-radius: 10px;
+    cursor: pointer;
+}

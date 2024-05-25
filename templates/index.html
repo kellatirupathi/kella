@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Upload and Display</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/antd/4.16.13/antd.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/antd/4.16.13/antd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="flex-container">
+            <div class="section">
+                <h2 id="uploadHeading">Upload CSV File</h2>
+                <div class="input-group">
+                    <input type="file" id="fileInput" accept=".csv">
+                    <button id="uploadButton">Upload</button>
+                </div>
+                <div class="table-container">
+                    <table id="dataTable">
+                        <thead>
+                            <tr>
+                                <th id="dataTable1">User ID</th>
+                                <th>Resume Link</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Data will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="section">
+                <div style="display: flex; justify-content: space-between;">
+                    <h2 id="searchHeading">Search Keyword in Resumes</h2>
+                    <button id="saveButton">Save</button>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="keywordInput" placeholder="Enter keywords separated by commas">
+                    <button id="searchButton">Search</button>
+                </div>
+                <div class="table-container">
+                    <table id="resultTable">
+                        <thead>
+                            <tr>
+                                <th id="resultTable2">Checkbox</th>
+                                <th>Matched</th>
+                                <th id="resultTable1">User ID</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Matched resume links will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
