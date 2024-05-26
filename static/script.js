@@ -16,7 +16,7 @@ document.getElementById('uploadButton').addEventListener('click', () => {
                 antd.notification.error({
                     message: 'Error',
                     description: data.error,
-                    duration: 2,
+                    duration: 1,
                 });
             } else {
                 displayCSVData(data);
@@ -28,7 +28,7 @@ document.getElementById('uploadButton').addEventListener('click', () => {
         antd.notification.warning({
             message: 'Warning',
             description: 'Please upload a valid CSV file.',
-            duration: 2,
+            duration: 1,
         });
     }
 });
@@ -54,7 +54,7 @@ function triggerSearch() {
     const pdfData = Array.from(document.querySelectorAll('#dataTable tbody tr')).map(row => {
         return {
             user_id: row.cells[0].innerText,
-            resume_link: row.cells[1].innerText
+            resume_link: row.cells[1].querySelector('a').href // Retrieve the actual link from the anchor tag
         };
     });
 
@@ -75,7 +75,7 @@ function triggerSearch() {
                 antd.notification.error({
                     message: 'Error',
                     description: data.error,
-                    duration: 2,
+                    duration: 1,
                 });
             } else {
                 displayMatchedResumes(data, keywordInput);
@@ -90,7 +90,7 @@ function triggerSearch() {
         antd.notification.warning({
             message: 'Warning',
             description: 'Please enter keywords and ensure there are resume links uploaded.',
-            duration: 2,
+            duration: 1,
         });
     }
 }
@@ -99,8 +99,11 @@ function saveResultsToGoogleSheet() {
     const results = Array.from(document.querySelectorAll('#resultTable tbody tr')).map(row => {
         return {
             user_id: row.cells[2].innerText,
-            resume_link: row.cells[1].innerText,
-            checked: row.cells[0].querySelector('input[type="checkbox"]').checked
+            resume_link: row.cells[1].querySelector('a').href, // Retrieve the actual link from the anchor tag
+            checked: row.cells[0].querySelector('input[type="checkbox"]').checked,
+            percentage: row.cells[3].innerText, // Get the percentage value
+            matched_technologies: row.cells[4].innerText, // Get the matched technologies
+            existing_technologies: row.cells[5].innerText  // Get the existing technologies
         };
     });
 
@@ -117,13 +120,13 @@ function saveResultsToGoogleSheet() {
             antd.notification.error({
                 message: 'Error',
                 description: data.error,
-                duration: 2,
+                duration: 1,
             });
         } else {
             antd.notification.success({
                 message: 'Success',
                 description: 'Results saved to Google Spreadsheet.',
-                duration: 2,
+                duration: 1,
             });
         }
     })
@@ -134,13 +137,21 @@ function displayCSVData(data) {
     const tableBody = document.querySelector('#dataTable tbody');
     tableBody.innerHTML = '';  // Clear any existing rows
 
-    data.forEach(row => {
+    data.forEach((row, index) => {
         const tr = document.createElement('tr');
         const tdUserId = document.createElement('td');
         const tdResumeLink = document.createElement('td');
 
         tdUserId.textContent = row.user_id;
-        tdResumeLink.innerHTML = `<a href="${row.resume_link}" target="_blank">${row.resume_link}</a>`;
+        const link = document.createElement('a');
+        link.href = row.resume_link;
+        link.target = '_blank';
+        link.textContent = `Resume${index + 1}`;
+        link.addEventListener('click', (event) => {
+            event.target.classList.add('red-link');
+        });
+
+        tdResumeLink.appendChild(link);
 
         tr.appendChild(tdUserId);
         tr.appendChild(tdResumeLink);
@@ -153,25 +164,43 @@ function displayMatchedResumes(data, keywords) {
     resultBody.innerHTML = '';  // Clear any existing rows
 
     if (data.length > 0) {
-        data.forEach(entry => {
+        data.forEach((entry, index) => {
             const tr = document.createElement('tr');
             const tdCheckbox = document.createElement('td');
             const tdLink = document.createElement('td');
             const tdUserId = document.createElement('td');
+            const tdPercentage = document.createElement('td');
+            const tdMatchedTechnologies = document.createElement('td'); // New column for matched technologies
+            const tdExistingTechnologies = document.createElement('td'); // New column for existing technologies
 
             tdCheckbox.innerHTML = `<input type="checkbox" class="large-checkbox">`;
-            tdLink.innerHTML = `<a href="${entry.resume_link}" target="_blank">${entry.resume_link}</a>`;
+
+            const link = document.createElement('a');
+            link.href = entry.resume_link;
+            link.target = '_blank';
+            link.textContent = `Resume${index + 1}`;
+            link.addEventListener('click', (event) => {
+                event.target.classList.add('red-link');
+            });
+
+            tdLink.appendChild(link);
             tdUserId.textContent = entry.user_id;
+            tdPercentage.textContent = `${entry.percentage}%`;
+            tdMatchedTechnologies.textContent = entry.matched_technologies.join(', '); // Display matched technologies
+            tdExistingTechnologies.textContent = entry.existing_technologies.join(', '); // Display existing technologies
 
             tr.appendChild(tdCheckbox);
             tr.appendChild(tdLink);
             tr.appendChild(tdUserId);
+            tr.appendChild(tdPercentage);
+            tr.appendChild(tdMatchedTechnologies);
+            tr.appendChild(tdExistingTechnologies);
             resultBody.appendChild(tr);
         });
     } else {
         const tr = document.createElement('tr');
         const tdNoMatch = document.createElement('td');
-        tdNoMatch.setAttribute('colspan', '3');
+        tdNoMatch.setAttribute('colspan', '6'); // Updated colspan to 6
         tdNoMatch.className = 'center-message';
         tdNoMatch.textContent = `No matches found for keywords "${keywords}"`;
         tr.appendChild(tdNoMatch);
@@ -196,7 +225,7 @@ function calculateEstimatedTime(numberOfPdfs) {
 
 function startSearchTimer(estimatedTime) {
     const resultBody = document.querySelector('#resultTable tbody');
-    resultBody.innerHTML = `<tr><td colspan="3" class="center-message">Searching... <span id="timer">${estimatedTime}</span> seconds</td></tr>`;
+    resultBody.innerHTML = `<tr><td colspan="6" class="center-message">Searching... <span id="timer">${estimatedTime}</span> seconds</td></tr>`; // Updated colspan to 6
     let timer = estimatedTime;
     window.searchTimer = setInterval(() => {
         timer--;

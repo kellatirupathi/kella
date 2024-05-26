@@ -6,6 +6,7 @@ import csv
 import re
 import os
 import json
+from datetime import datetime  # Import datetime for timestamp
 
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
@@ -19,6 +20,10 @@ SERVICE_ACCOUNT_FILE = 'credentials.json'  # Path to your credentials file
 credentials = service_account.Credentials.from_service_account_file(
     SERVICE_ACCOUNT_FILE, scopes=SCOPES)
 spreadsheet_id = '1v4FnbxnHkUIG0MSo3aHRFFAVHa4l51hcXF_YlLq6PaI'  # Replace with your Google Spreadsheet ID
+
+# List of all possible technologies to check for in the resumes
+ALL_TECHNOLOGIES = ['Python', 'Java', 'JavaScript', 'C#', 'C++', 'SQL', 'React.js', 'Node.js', 'HTML', 'CSS', 'Bootstrap', 'Express', 'SQLite', 'SQL', 'Flexbox', 'MongoDB', 'Data Structures & Algorithms', 'OOPs', 'Redux', 'Git', 'SpringBoot', ': Data Analytics', 'Manual Testing', 'Selenium Testing', 'User Interface (UI) Design', 'XR (AR, VR, MR)', 'AI / ML', 'AWS', 'Cyber Security', 'Data Structures'
+, 'Algorithms', 'Django', 'Flask', 'Linux', 'NumPy', 'SAP', 'AngularJS', 'Flutter', 'UX design', 'jQuery', 'Angular']  # Add more as needed
 
 def download_pdf(url):
     response = requests.get(url)
@@ -34,16 +39,34 @@ def extract_text_from_pdf(pdf_file):
 
 def search_keyword_in_pdfs(data, keywords):
     matched_entries = []
+    total_keywords = len(keywords)
     for entry in data:
         url = entry['resume_link']
         user_id = entry['user_id']
         pdf_file = download_pdf(url)
         text = extract_text_from_pdf(pdf_file)
+        
+        match_count = 0
+        matched_technologies = []
+        existing_technologies = [tech for tech in ALL_TECHNOLOGIES if re.search(r'\b' + re.escape(tech) + r'\b', text, re.IGNORECASE)]
+        
         for keyword in keywords:
-            # Use regular expression to find exact phrase match
             if re.search(r'\b' + re.escape(keyword) + r'\b', text, re.IGNORECASE):
-                matched_entries.append({'user_id': user_id, 'resume_link': url})
-                break  # Stop checking other keywords if one matches
+                match_count += 1
+                matched_technologies.append(keyword)
+        
+        if match_count > 0:
+            percentage = (match_count / total_keywords) * 100
+            matched_entries.append({
+                'user_id': user_id,
+                'resume_link': url,
+                'percentage': round(percentage, 2),  # Round to 2 decimal places
+                'matched_technologies': matched_technologies,
+                'existing_technologies': existing_technologies
+            })
+    
+    # Sort matched entries by percentage in descending order
+    matched_entries.sort(key=lambda x: x['percentage'], reverse=True)
     return matched_entries
 
 @app.route('/')
@@ -88,9 +111,18 @@ def save_results():
         sheet = service.spreadsheets()
 
         # Prepare the data to be saved
-        values = [['User ID', 'Resume Link', 'Checked']]
+        values = [['Timestamp', 'User ID', 'Resume Link', 'Checked', 'Percentage', 'Matched Technologies', 'Existing Technologies']]
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # Add the current timestamp
         for result in results:
-            values.append([result['user_id'], result['resume_link'], 'TRUE' if result['checked'] else 'FALSE'])
+            values.append([
+                timestamp, 
+                result['user_id'], 
+                result['resume_link'], 
+                'TRUE' if result['checked'] else 'FALSE', 
+                result['percentage'], 
+                ''.join(result['matched_technologies']),  # Join matched technologies without any separator
+                ''.join(result['existing_technologies'])  # Join existing technologies without any separator
+            ])
 
         body = {
             'values': values
@@ -110,4 +142,4 @@ def save_results():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=8000, debug=True)

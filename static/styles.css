@@ -27,7 +27,17 @@ body {
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     width: 58%; /* Ensure the sections have fixed width */
-    min-width: 55%; /* Prevent the sections from getting smaller */
+    min-width: 35%; /* Prevent the sections from getting smaller */
+    box-sizing: border-box;
+}
+
+.section1 {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 58%; /* Ensure the sections have fixed width */
+    min-width: 75%; /* Prevent the sections from getting smaller */
     box-sizing: border-box;
 }
 
@@ -64,7 +74,7 @@ h2 {
 }
 
 .table-container {
-    max-height: 460px;
+    max-height: 530px;
     overflow-y: auto;
     margin-top: 20px;
     border: 1px solid #ddd;
@@ -100,11 +110,11 @@ table tbody tr:hover {
 }
 
 #dataTable1 {
-    width: 40%;
+    width: 70%;
 }
 
 #resultTable1 {
-    width: 38%;
+    width: 30%;
 }
 
 /* Add this CSS class to your styles.css */
@@ -112,7 +122,7 @@ table tbody tr:hover {
     text-align: center;
     font-weight: bold;
     vertical-align: middle; /* Vertical alignment */
-    height: 200px; /* Ensure sufficient height to center vertically */
+    height: 480px; /* Ensure sufficient height to center vertically */
     font-size: 25px;
 }
 
@@ -121,6 +131,14 @@ table tbody tr:hover {
     font-size: 8px;
     text-align: center;
 }
+
+#resultTable4 {
+    width: 7%
+}
+#resultTable5{
+    width: 10%
+}
+
 .large-checkbox {
     width: 20px;
     height: 20px;
@@ -133,3 +151,12 @@ table tbody tr:hover {
     border-radius: 10px;
     cursor: pointer;
 }
+
+#saveButton:hover {
+    background-color: rgb(48, 170, 48);
+
+}
+.red-link {
+    color: red;
+}
+
