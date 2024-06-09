@@ -19,6 +19,12 @@ atexit.register(lambda: flask_process.terminate())
 # Wait for Flask server to start
 time.sleep(1)  # Adjust this time if needed
 
+# Set the page title and icon
+st.set_page_config(
+    page_title="Resume Keyword Search",
+    page_icon="https://indiatechnologynews.in/wp-content/uploads/2021/09/nxt-wave.png"
+)
+
 # Create an iframe to embed the Flask app
 st.markdown('''
     <style>
