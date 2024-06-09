@@ -23,8 +23,8 @@ ALL_TECHNOLOGIES = [
     'Python', 'Java', 'JavaScript', 'C#', 'C++', 'SQL', 'React.js', 'Node.js', 'HTML', 'CSS', 'Bootstrap', 'Express',
     'SQLite', 'Flexbox', 'MongoDB', 'OOPs', 'Redux', 'Git', 'SpringBoot', 'Data', 'Analytics', 'Manual', 'Testing',
     'Selenium', 'Testing', 'User', 'Interface', 'UI' 'XR', 'AI', 'ML', 'AWS', 'Cyber', 'Security', 'Data', 'Structures',
-    'Algorithms', 'Django', 'Flask', 'Linux', 'NumPy', 'SAP', 'AngularJS', 'Flutter', 'UX design', 'jQuery', 'Angular',
-    'REST', 'API', 'Calls'
+    'Algorithms', 'Django', 'Flask', 'Linux', 'NumPy', 'SAP', 'AngularJS', 'Flutter', 'UX', 'design', 'jQuery', 'Angular',
+    'REST', 'API', 'Calls', 'node', 'Nodejs', 'Reactjs', 'Rails', 'Vue', 'WordPress', 'Science', 'AR', 'VR', 'MR', 'Next.js', 'Nexjs', 'Kubernetes', 'Microsoft', 'Azure', 'DevOps'
 ]  # Add more as needed
 
 def download_pdf(url):

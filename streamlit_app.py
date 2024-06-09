@@ -37,6 +37,3 @@ st.markdown('''
     </style>
     <iframe src="http://localhost:8000" class="full-screen-frame"></iframe>
 ''', unsafe_allow_html=True)
-
-# Streamlit will keep running the Flask app until the user stops it
-st.write("Use the Flask interface above to interact with the application.")
