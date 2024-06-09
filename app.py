@@ -1,15 +1,12 @@
 from flask import Flask, request, jsonify, render_template
 import requests
-from PyPDF2 import PdfReader
+from PyPDF2 import PdfReader, errors
 from io import BytesIO
 import csv
 import re
-import os
-import json
-from datetime import datetime  # Import datetime for timestamp
-
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -22,20 +19,33 @@ credentials = service_account.Credentials.from_service_account_file(
 spreadsheet_id = '1v4FnbxnHkUIG0MSo3aHRFFAVHa4l51hcXF_YlLq6PaI'  # Replace with your Google Spreadsheet ID
 
 # List of all possible technologies to check for in the resumes
-ALL_TECHNOLOGIES = ['Python', 'Java', 'JavaScript', 'C#', 'C++', 'SQL', 'React.js', 'Node.js', 'HTML', 'CSS', 'Bootstrap', 'Express', 'SQLite', 'SQL', 'Flexbox', 'MongoDB', 'Data Structures & Algorithms', 'OOPs', 'Redux', 'Git', 'SpringBoot', ': Data Analytics', 'Manual Testing', 'Selenium Testing', 'User Interface (UI) Design', 'XR (AR, VR, MR)', 'AI / ML', 'AWS', 'Cyber Security', 'Data Structures'
-, 'Algorithms', 'Django', 'Flask', 'Linux', 'NumPy', 'SAP', 'AngularJS', 'Flutter', 'UX design', 'jQuery', 'Angular']  # Add more as needed
+ALL_TECHNOLOGIES = [
+    'Python', 'Java', 'JavaScript', 'C#', 'C++', 'SQL', 'React.js', 'Node.js', 'HTML', 'CSS', 'Bootstrap', 'Express',
+    'SQLite', 'Flexbox', 'MongoDB', 'OOPs', 'Redux', 'Git', 'SpringBoot', 'Data', 'Analytics', 'Manual', 'Testing',
+    'Selenium', 'Testing', 'User', 'Interface', 'UI' 'XR', 'AI', 'ML', 'AWS', 'Cyber', 'Security', 'Data', 'Structures',
+    'Algorithms', 'Django', 'Flask', 'Linux', 'NumPy', 'SAP', 'AngularJS', 'Flutter', 'UX design', 'jQuery', 'Angular',
+    'REST', 'API', 'Calls'
+]  # Add more as needed
 
 def download_pdf(url):
-    response = requests.get(url)
-    response.raise_for_status()  # Ensure the request was successful
-    return BytesIO(response.content)
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        return BytesIO(response.content)
+    except requests.RequestException as e:
+        print(f"Error downloading PDF from {url}: {e}")
+        return None
 
 def extract_text_from_pdf(pdf_file):
-    pdf_reader = PdfReader(pdf_file)
-    text = ""
-    for page in pdf_reader.pages:
-        text += page.extract_text()
-    return text
+    try:
+        pdf_reader = PdfReader(pdf_file)
+        text = ""
+        for page in pdf_reader.pages:
+            text += page.extract_text()
+        return text
+    except errors.PdfReadError as e:
+        print(f"Error reading PDF file: {e}")
+        return ""
 
 def search_keyword_in_pdfs(data, keywords):
     matched_entries = []
@@ -44,14 +54,20 @@ def search_keyword_in_pdfs(data, keywords):
         url = entry['resume_link']
         user_id = entry['user_id']
         pdf_file = download_pdf(url)
+        if not pdf_file:
+            continue  # Skip if the PDF could not be downloaded
+        
         text = extract_text_from_pdf(pdf_file)
+        if not text:
+            continue  # Skip if the text could not be extracted
         
         match_count = 0
         matched_technologies = []
         existing_technologies = [tech for tech in ALL_TECHNOLOGIES if re.search(r'\b' + re.escape(tech) + r'\b', text, re.IGNORECASE)]
         
         for keyword in keywords:
-            if re.search(r'\b' + re.escape(keyword) + r'\b', text, re.IGNORECASE):
+            pattern = r'\b' + re.escape(keyword).replace(' ', r'\s+') + r'\b'
+            if re.search(pattern, text, re.IGNORECASE):
                 match_count += 1
                 matched_technologies.append(keyword)
         
@@ -60,12 +76,11 @@ def search_keyword_in_pdfs(data, keywords):
             matched_entries.append({
                 'user_id': user_id,
                 'resume_link': url,
-                'percentage': round(percentage, 2),  # Round to 2 decimal places
+                'percentage': round(percentage, 2),
                 'matched_technologies': matched_technologies,
                 'existing_technologies': existing_technologies
             })
     
-    # Sort matched entries by percentage in descending order
     matched_entries.sort(key=lambda x: x['percentage'], reverse=True)
     return matched_entries
 
@@ -110,28 +125,25 @@ def save_results():
         service = build('sheets', 'v4', credentials=credentials)
         sheet = service.spreadsheets()
 
-        # Prepare the data to be saved
-        values = [['Timestamp', 'User ID', 'Resume Link', 'Checked', 'Percentage', 'Matched Technologies', 'Existing Technologies']]
-        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # Add the current timestamp
+        values = [['Timestamp', 'User ID', 'Resume Link', 'Percentage', 'Matched Technologies', 'Existing Technologies']]
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         for result in results:
             values.append([
                 timestamp, 
                 result['user_id'], 
                 result['resume_link'], 
-                'TRUE' if result['checked'] else 'FALSE', 
                 result['percentage'], 
-                ''.join(result['matched_technologies']),  # Join matched technologies without any separator
-                ''.join(result['existing_technologies'])  # Join existing technologies without any separator
+                ', '.join(result['matched_technologies']),
+                ', '.join(result['existing_technologies'])
             ])
 
         body = {
             'values': values
         }
 
-        # Save the data to Google Sheets
         result = sheet.values().append(
             spreadsheetId=spreadsheet_id,
-            range='Sheet1!A1',  # Adjust the range as needed
+            range='Sheet1!A1',
             valueInputOption='RAW',
             insertDataOption='INSERT_ROWS',
             body=body

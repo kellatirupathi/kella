@@ -102,8 +102,8 @@ function saveResultsToGoogleSheet() {
             resume_link: row.cells[1].querySelector('a').href, // Retrieve the actual link from the anchor tag
             checked: row.cells[0].querySelector('input[type="checkbox"]').checked,
             percentage: row.cells[3].innerText, // Get the percentage value
-            matched_technologies: row.cells[4].innerText, // Get the matched technologies
-            existing_technologies: row.cells[5].innerText  // Get the existing technologies
+            matched_technologies: row.cells[4].innerText.split(', '), // Get the matched technologies
+            existing_technologies: row.cells[5].innerText.split(', ')  // Get the existing technologies
         };
     });
 
