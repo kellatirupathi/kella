@@ -1,1 +1,1 @@
-web: . venv/bin/activate && npm start
+web: . venv/bin/activate && python app.py
