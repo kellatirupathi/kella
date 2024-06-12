@@ -1,0 +1,7 @@
+[build]
+command = "python app.py"
+publish = "."
+
+[build.environment]
+FLASK_APP = "app.py"
+FLASK_ENV = "production"
