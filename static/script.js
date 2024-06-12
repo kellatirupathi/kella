@@ -219,13 +219,28 @@ function updateSearchCount(count) {
 }
 
 function calculateEstimatedTime(numberOfPdfs) {
-    const timePerPdf = 2; // Estimate 2 seconds per PDF for processing
+    const timePerPdf = 1; // Estimate 1 second per PDF for processing
     return numberOfPdfs * timePerPdf;
 }
 
 function startSearchTimer(estimatedTime) {
     const resultBody = document.querySelector('#resultTable tbody');
-    resultBody.innerHTML = `<tr><td colspan="6" class="center-message">Searching... <span id="timer">${estimatedTime}</span> seconds</td></tr>`; // Updated colspan to 6
+    resultBody.innerHTML = `
+        <tr>
+            <td colspan="6" class="center-message">
+                <div class="spin-container">
+                    <div class="ant-spin ant-spin-spinning">
+                        <span class="ant-spin-dot ant-spin-dot-spin">
+                            <i class="ant-spin-dot-item"></i>
+                            <i class="ant-spin-dot-item"></i>
+                            <i class="ant-spin-dot-item"></i>
+                            <i class="ant-spin-dot-item"></i>
+                        </span>
+                    </div>
+                    <div class="time" >Estimated Time: <span id="timer">${estimatedTime}</span> seconds</div>
+                </div>
+            </td>
+        </tr>`;
     let timer = estimatedTime;
     window.searchTimer = setInterval(() => {
         timer--;

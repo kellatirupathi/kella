@@ -7,6 +7,7 @@ import re
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 app = Flask(__name__)
 
@@ -47,39 +48,48 @@ def extract_text_from_pdf(pdf_file):
         print(f"Error reading PDF file: {e}")
         return ""
 
+def process_pdf(entry, keywords, total_keywords):
+    url = entry['resume_link']
+    user_id = entry['user_id']
+    pdf_file = download_pdf(url)
+    if not pdf_file:
+        return None  # Skip if the PDF could not be downloaded
+    
+    text = extract_text_from_pdf(pdf_file)
+    if not text:
+        return None  # Skip if the text could not be extracted
+    
+    match_count = 0
+    matched_technologies = []
+    existing_technologies = [tech for tech in ALL_TECHNOLOGIES if re.search(r'\b' + re.escape(tech) + r'\b', text, re.IGNORECASE)]
+    
+    for keyword in keywords:
+        pattern = r'\b' + re.escape(keyword).replace(' ', r'\s+') + r'\b'
+        if re.search(pattern, text, re.IGNORECASE):
+            match_count += 1
+            matched_technologies.append(keyword)
+    
+    if match_count > 0:
+        percentage = (match_count / total_keywords) * 100
+        return {
+            'user_id': user_id,
+            'resume_link': url,
+            'percentage': round(percentage, 2),
+            'matched_technologies': matched_technologies,
+            'existing_technologies': existing_technologies
+        }
+    return None
+
 def search_keyword_in_pdfs(data, keywords):
     matched_entries = []
     total_keywords = len(keywords)
-    for entry in data:
-        url = entry['resume_link']
-        user_id = entry['user_id']
-        pdf_file = download_pdf(url)
-        if not pdf_file:
-            continue  # Skip if the PDF could not be downloaded
-        
-        text = extract_text_from_pdf(pdf_file)
-        if not text:
-            continue  # Skip if the text could not be extracted
-        
-        match_count = 0
-        matched_technologies = []
-        existing_technologies = [tech for tech in ALL_TECHNOLOGIES if re.search(r'\b' + re.escape(tech) + r'\b', text, re.IGNORECASE)]
-        
-        for keyword in keywords:
-            pattern = r'\b' + re.escape(keyword).replace(' ', r'\s+') + r'\b'
-            if re.search(pattern, text, re.IGNORECASE):
-                match_count += 1
-                matched_technologies.append(keyword)
-        
-        if match_count > 0:
-            percentage = (match_count / total_keywords) * 100
-            matched_entries.append({
-                'user_id': user_id,
-                'resume_link': url,
-                'percentage': round(percentage, 2),
-                'matched_technologies': matched_technologies,
-                'existing_technologies': existing_technologies
-            })
+    
+    with ThreadPoolExecutor(max_workers=300) as executor:  # Adjust max_workers based on your server capacity
+        futures = [executor.submit(process_pdf, entry, keywords, total_keywords) for entry in data]
+        for future in as_completed(futures):
+            result = future.result()
+            if result:
+                matched_entries.append(result)
     
     matched_entries.sort(key=lambda x: x['percentage'], reverse=True)
     return matched_entries
