@@ -1,1 +1,1 @@
-web: source venv/bin/activate && python app.py
+web: . venv/bin/activate && python app.py
